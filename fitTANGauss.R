@@ -61,11 +61,6 @@ fit_tan_structure = function(mutualInfoCond,target,root=1,pred_disc){
   rownames(adj_mat)<- varTAN
   colnames(adj_mat)<- varTAN
   
-  # Calculamos el tan
-  # library(bnlearn)
-  # dag <- empty.graph(varTAN)
-  # amat(dag)<- adj_mat
-  # graphviz.plot(dag)
   return(adj_mat)
 }
 
@@ -140,13 +135,9 @@ pVar_C = function(discVar_C,pC){
   pVar_C = data.frame(C = pC[["C"]],
                       mu = as.vector(discVar_C$coefficients[1,]),
                       sd = as.vector(discVar_C$sd))
-  # colnames(pVar_C) = c(varC,paste0("mu_",var,"_",varC),
-  # paste0("sd_",var,"_",varC))
+
   return(pVar_C)
 }
-
-# Y = "S.GC"
-# data = datos[,c(target,X,Y)]
 
 cond_mi_cont = function(X,Y,target,data){
   levels_target = levels(data[[target]])
@@ -158,9 +149,6 @@ cond_mi_cont = function(X,Y,target,data){
   return(-1/2*sum(prob_target*log((1-corXY_t^2))))
 }
 
-
-# Y = "X__Is"
-# data = datos[,c(target,X,Y)]
 cond_mi_cont_disc = function(X,Y,target,data){
   browser()
   levels_target = levels(data[[target]])
@@ -185,36 +173,6 @@ cond_mi_cont_disc = function(X,Y,target,data){
   var_Y_T = ifelse(var_Y_T<10^-6,10^-6,var_Y_T)
   return(1/2*(sum(prob_target*log(varX_t))-sum(prob_joint*log(var_Y_T),na.rm = T)))
 }
-# cond_mi_cont_disc = function(data,varX,varY,varC,discY_C){
-#   # browser()
-#   # Learning distributions
-#   dag = empty.graph(c(varX,varY,varC))
-#   arcs(dag) = matrix(c(varC,varC,varX,varX,varY,varY),ncol=2)
-#   # graphviz.plot(dag)
-#   distributions = bn.fit(dag,data)
-#   discC = distributions[[varC]]
-#   discX_C = distributions[[varX]]
-#   discY_XC = distributions[[varY]]
-#   rm(distributions)
-#   pC = data.frame(discC$prob)
-#   colnames(pC) = c("C","prob")
-#   pY_C = pVar_C(discY_C,pC)
-#   
-#   pX_C = data.frame(discX_C$prob)
-#   colnames(pX_C)= c("X","C","probsX")
-#   pY_CX = data.frame(mu_Y_XC = as.vector(discY_XC$coefficients),
-#                      sd_Y_XC = discY_XC$sd)
-#   
-#   ## Arbol 
-#   arbol = cbind(pX_C,pY_CX)
-#   arbol = merge.data.frame(arbol,pC)
-#   arbol = merge.data.frame(arbol,pY_C)
-#   
-#   KL = 1/2*(log(arbol$sd_Y_XC/arbol$sd)-1+arbol$sd/arbol$sd_Y_XC+
-#               (arbol$mu-arbol$mu_Y_XC)^2/arbol$sd_Y_XC)
-#   return(sum(arbol$probsX*arbol$prob*KL,na.rm = T))
-# }
-
 
 
 MI_tan_gauss = function(data,target){
@@ -248,26 +206,6 @@ MI_tan_gauss = function(data,target){
     })
     
     MI[names(Mis),Y] = Mis
-  }
-  return(MI)
-}
-# Mutual Information tan discreto-----------------------------
-mutual_information_tan_d = function(data_new,target){
-  # browser()
-  # Seleccionamos las variables
-  varPred = setdiff(colnames(data_new),target)
-  # Inicializamos la matriz para MI
-  MI = matrix(0,nrow = length(varPred),ncol = length(varPred),
-                  dimnames = list(varPred,varPred))
-  # browser()
-  for(i in 1:(length(varPred)-1)){
-    X = varPred[i]
-    for(j in (i+1):length(varPred)){
-      Y = varPred[j]
-      MI_aux = condinformation(data_new[,X],data_new[,Y],data_new[,target])
-      MI[Y,X] = MI_aux
-      MI[X,Y] = MI_aux
-    }
   }
   return(MI)
 }
