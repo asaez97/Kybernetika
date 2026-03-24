@@ -37,7 +37,6 @@ prim_maximal <- function(adj_mat,root = 1) {
     # Añadir la arista al árbol maximal
     if (u != -1 && v != -1) {
       maximal_tree[u, v] <- 1
-      # maximal_tree[v, u] <- max_weight
       selected_nodes[v] <- TRUE
     }
   }
@@ -57,11 +56,6 @@ fit_tan_structure = function(mutualInfoCond,target,root=1){
   rownames(adj_mat)<- varTAN
   colnames(adj_mat)<- varTAN
   
-  # Calculamos el tan
-  # library(bnlearn)
-  # dag <- empty.graph(varTAN)
-  # amat(dag)<- adj_mat
-  # graphviz.plot(dag)
   return(adj_mat)
 }
 # Funcion para calcular la matriz de IM dada la clase---------------------------
@@ -82,7 +76,6 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
               dimnames = list(varPred,varPred))
   ff = function(i,X,target,data,distC,distX_C,distributions,fit.args){
     Y = varPred[i]
-    # browser()
     if(X==Y){
       return(list(MI=0,name = Y))
     }else{
@@ -90,8 +83,7 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
                     paste0(X,"|",paste0(sort(c(Y,target)),collapse = ":")),
                     collapse = " "))
       distY_C = distributions[[paste0(Y,"|",target)]]
-      # print(distY_C)
-      # exists("cond_mut_information_cont")
+
       if(distX_C$varType=="Continuous"){
         if(distY_C$varType=="Continuous"){
           result = tryCatch(cond_mut_information_cont(data = data,className = target,
@@ -125,7 +117,6 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
                                             distX_C = distX_C)
         }
       }
-      # return(list(MI=0,distributions = distY_C))
     }
     return(list(MI = result$MI,name = Y))
   }
@@ -147,11 +138,7 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
     distributions = lapply(result,"[[",1)
     names(distributions)=lapply(result,"[[",2)
     distC = distVar(data[,target,drop = F],target,fit.args)
-    # stopCluster(cl)
-    # X = varPred[1]
-    # distributions2 = list()
-    # cl <- makeCluster(cores[1]-1)
-    # registerDoParallel(cl)
+
     foreach(X = varPred,
             .packages = c("logging","MoTBFs"))%do%{
               # variable que es condicionada
@@ -169,25 +156,15 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
               
               MIs = sapply(result, "[[", "MI")
               namesDist = sapply(result, "[[", "name")
-              # distr2 = sapply(result,"[[","distributions")
-              # names(distr2) = sapply(namesDist, "[", 2)
-              # distributions2 = append(distr2,distributions2)
               # Padres por filas e hijos por columnas
               MI[sapply(namesDist, "[", 1),X]=MIs
               
             }
-    # result=list(MI,distributions)
-    # save(result,file=paste("resultados_iter_",iter,".Rdata",sep =""))
     stopCluster(cl)
     Sys.time()-time
   }else{
     # Distribucion de la variable clase y de X_i|C--------------------
     distributions = fitNB_dis(data,target,fit.args)
-    # if(is.null(root)){
-    #   MI = mutual_info_df_Y(data,target,fit.args,distributions)
-    #   root = which.max(MI)
-    # }
-    X = varPred[3]
     distC = distributions[[target]]
     # nDist = length(distributions)
     # browser()
@@ -201,9 +178,6 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
         if(X==Y){
           next
         }
-        # if(iter<8000){
-        #   next
-        # }
         
         loginfo(paste("Learning",
                       paste0(X,"|",paste0(sort(c(Y,target)),collapse = ":")),
@@ -239,15 +213,9 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
                                             distX_C = distX_C)
           }
         }
-        # nDist=nDist+1
-        # distributions[nDist]=result$distributions[1]
-        # names(distributions)[nDist]=names(result$distributions[1])
         # Padres por filas e hijos por columnas
         MI[Y,X]=result$MI
-        # result=list(MI,distributions)
-        # save(result,file=paste("resultados_iter_",iter,".Rdata",sep =""))
       }
-      save(MI,file=paste("../Experimentacion/MI.RData",sep =""))
     }
   }
   # Hacemos la media para considerar un grafo no dirigido
@@ -257,7 +225,7 @@ mutual_information_tan = function(data,target,fit.args,root = 1,parallel = F){
   }
   return(list(MI=MI,root = root))
 }
-# Mutual Information tan discreto y CG-----------------------------
+# Mutual Information tan discreto -----------------------------
 mutual_information_tan_d = function(data_new,varsNew=NULL,target,
                                     mutualInfoCond_0=NULL){
   # browser()
@@ -267,11 +235,6 @@ mutual_information_tan_d = function(data_new,varsNew=NULL,target,
   varsOld = setdiff(varPred,varsNew)
   
   # Distribuciones de la variable nuevas X_i|C--------------------
-  
-  # if(is.null(root)){
-  #   MI = mutual_info_df_Y(data,target,fit.args,distributions)
-  #   root = which.max(MI)
-  # }
   # Inicializamos la matriz para MI
   MI_new = matrix(0,nrow = length(varPred),ncol = length(varPred),
                   dimnames = list(varPred,varPred))
@@ -362,75 +325,3 @@ fit_tan <- function(target, data, root = NULL, distributions = NULL,
     return(bn)
   }
 }
-## Example 1----------------------------------------------------
-
-# set.seed(14)
-# C = as.factor(sample(c("c1","c2"),100,T,c(0.4,0.6)))
-# tbC = as.vector(table(C))
-# set.seed(1452)
-# X = c()
-# X[C =="c1"] = rbeta(tbC[1],2,3)
-# set.seed(548)
-# X[C =="c2"] = 2+rbeta(tbC[2],2,3)
-# set.seed(841)
-# Y = as.factor(sample(c("y1","y2"),100,T))
-# set.seed(74)
-# Z = rnorm(100)
-# data = data.frame(X,Y,Z,C)
-# 
-# target = "C"
-# mutualInfoCond = NULL
-# root=NULL
-# distributions=NULL
-# fit.args=NULL
-
-# fit_tan(target = target,data = data,root=root)
-
-## Example 2-----------------------------------------------------
-# set.seed(14)
-# C = as.factor(sample(c("c1","c2"),100,T,c(0.4,0.6)))
-# tbC = as.vector(table(C))
-# set.seed(1452)
-# X = c()
-# X[C =="c1"] = rbeta(tbC[1],2,3)
-# set.seed(548)
-# X[C =="c2"] = 2+rbeta(tbC[2],2,3)
-# set.seed(841)
-# Y = as.factor(sample(c("y1","y2"),100,T))
-# set.seed(74)
-# Z = rnorm(100)
-# A= c()
-# set.seed(12)
-# A[C =="c1"] = sample(c("a1","a2"),tbC[1],T,c(0.7,0.3))
-# set.seed(174)
-# A[C =="c2"] = sample(c("a1","a2"),tbC[2],T,c(0.25,0.75))
-# A = as.factor(A)
-# target = "C"
-# mutualInfoCond = NULL
-# root=NULL
-# distributions=NULL
-# fit.args=fit.args.null(NULL)
-# data = data.frame(X,Y,Z,C)
-# data_new = data.frame(X,Y,Z,A,C)
-# order = 1:4
-# varsNew = "A"
-# bn_old = fit_tan(target,data = data,all = T)
-# mutualInfoCond_0 = bn_old$mutualInfoCond
-# distributions_0 = bn_old$distributions
-# # function(target, data_new, varsNew, root = NULL, distributions_0 = NULL,
-# #          mutualInfoCond_0,fit.args=NULL)
-# data_new
-# MI_dist = update_mutual_information_tan(data_new = data_new,varsNew = varsNew,
-#                                         target = target,
-#                                         distributions0 = distributions_0,
-#                                         mutualInfoCond_0 = mutualInfoCond_0,
-#                                         fit.args = fit.args)
-# mutualInfoCond = MI_dist$MI
-# distributions = MI_dist$distributions
-# root = MI_dist$root
-# bnAll = fit_tan(target = target,data = data_new,root = root,
-#                 distributions = distributions,
-#                 mutualInfoCond = mutualInfoCond,
-#                 all=T)
-# dag=getDAG(bnAll$bn)
-# graphviz.plot(dag)
