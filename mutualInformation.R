@@ -1,18 +1,3 @@
-# Funciones de control------------------------------------------
-fit.args.null = function(fit.args){
-  if(is.null(fit.args$numIntervals)){
-    fit.args$numIntervals=4
-  }
-  if(is.null(fit.args$POTENTIAL_TYPE)){
-    fit.args$POTENTIAL_TYPE="MOP"
-  }
-  if(is.null(fit.args$scale)){
-    fit.args$scale=F
-  }
-  if(is.null(fit.args$maxParam))
-    fit.args$maxParam = 7
-  return(fit.args)
-}
 # Funciones para calcular distribuciones---------------------------------------
 distX_cond = function(data,varX, varsCond, fit.args =NULL){
   fit.args = fit.args.null(fit.args)
@@ -52,25 +37,12 @@ integrateX = function(CPD_X_,CPD_X,X){
     # tranformamos en funcion
     CPD_X_i = as.function(CPD_X_[i][[1]])
     CPD_Xi = as.function(CPD_X[i][[1]])
-    # Calculo del integrando
-    # integrando = function(x){
-    #   xx = seq(domain[1],domain[2],10^-4)
-    #   minn = max(10^-5,min(CPD_X_i(xx),CPD_Xi(xx)))
-    #   return(CPD_X_i(x)*(log(CPD_X_i(x)/minn)-log(CPD_Xi(x)/minn)))
-    #   # return(CPD_X_i(x)*(log(CPD_X_i(x)/CPD_Xi(x))))
-    # }
-    # integrateX[i]=integrate(integrando,domain[1],domain[2])$value
     integrando1 = function(x){
-      # xx = seq(domain[1],domain[2],10^-4)
-      # minn = max(10^-5,min(CPD_X_i(xx),CPD_Xi(xx)))
+
       return(CPD_X_i(x)*log(CPD_X_i(x)))
-      # return(CPD_X_i(x)*(log(CPD_X_i(x)/CPD_Xi(x))))
     }
     integrando2 = function(x){
-      # xx = seq(domain[1],domain[2],10^-4)
-      # minn = max(10^-5,min(CPD_X_i(xx),CPD_Xi(xx)))
       return(CPD_X_i(x)*log(CPD_Xi(x)))
-      # return(CPD_X_i(x)*(log(CPD_X_i(x)/CPD_Xi(x))))
     }
     integrateX[i]=tryCatch(integrate(integrando1,domain[1],domain[2])$value-
       integrate(integrando2,domain[1],domain[2])$value,
@@ -98,15 +70,6 @@ integrateVar = function(CPD,domain){
 
 # Informacion mutua para dos variables discretas-----------------
 
-# fit.args =  Argumentos para la calcular las distribuciones MoTBFs
-# Vease argumentos de ConditionalMethod. Si es null, emplea los
-# argumentos por defecto de esa funcion con ademas numIntervals=4,
-# POTENTIAL_TYPE = "MOP",scale = F
-# Se puede introduccir la distribucion de C obtenida empleando la
-# la funcion probDiscreteVariable()
-# se puede introduccir tambien las distribuciones de Y|C, de X|C y de X| Y,C,
-# con X la variable continua e Y la variable discreta. Todas aprendidas con 
-# conditionalMethod
 mut_information_dis = function(data, nameVars=NULL, fit.args =NULL,
                                distC = NULL,distX_C=NULL,distX = NULL){
   # Chequeamos los argumentos para fijar las Mops------------
@@ -132,9 +95,7 @@ mut_information_dis = function(data, nameVars=NULL, fit.args =NULL,
   nDist=0
   ## Distribucion de X|C------------------------------------
   if(is.null(distX_C)){
-    # distX_C = conditionalMethod(data = data, nameParents = c("C"),
-    #                                 nameChild = "X",numIntervals = 4,
-    #                                 POTENTIAL_TYPE = "MOP",scale = scale)
+    
     distX_C = distX_cond(data = data,varX = X,
                          varsCond = C,fit.args = fit.args)
     # Almacenamos la distribucion para devolverla
@@ -179,21 +140,8 @@ mut_information_dis = function(data, nameVars=NULL, fit.args =NULL,
   MI = sum(arbol$sumX*arbol[,paste0("CPD_",C)])
   return(MI)
 }
-## Examples-----------
-# varNames = NULL
-# set.seed(1252)
-# X = as.factor(sample(c("x1","x2","x3"),100,T,prob = c(0.3,0.4,0.3)))
-# set.seed(1541)
-# Y = as.factor(sample(c("y1","y2"),100,T,prob = c(0.4,0.6)))
-# data = data.frame(X,Y)
-# fit.args=NULL
-# distX_C=NULL
-# mut_information_dis(data = data)
-# infotheo::multiinformation(data)
 
 # Informacion mutua para variable X continua e Y discreta-----------------------
-# varNames = c("mcg","lip")
-# data = data2[,varNames]
 mut_information_cont_dis = function(data,nameVars=NULL, fit.args =NULL,
                                     distC = NULL,distX_C=NULL,distX = NULL){
   fit.args = fit.args.null(fit.args)
@@ -244,9 +192,6 @@ mut_information_cont_dis = function(data,nameVars=NULL, fit.args =NULL,
   distC =  MoTBFs:::getFormatedBN(list(distC))[[1]]$functions
   ## Distribucion de X|C------------------------------------
   if(is.null(distX_C)){
-    # distX_C = conditionalMethod(data = data, nameParents = c("C"),
-    #                                 nameChild = "X",numIntervals = 4,
-    #                                 POTENTIAL_TYPE = "MOP",scale = scale)
     distX_C = distX_cond(data = data,varX = X,
                          varsCond = C,fit.args = fit.args)
     # Almacenamos la distribucion para devolverla
@@ -400,12 +345,6 @@ mut_information_cont = function(data,varNames=NULL){
   distXgivenY =  conditionalMethod(data = data, nameParents = varNames[2],
                                    nameChild = varNames[1],numIntervals = 4,
                                    POTENTIAL_TYPE = "MOP",scale = T)
-  # hist(X,probability = T)
-  # plot(distX,add=T)
-  # hist(X[Y=="b"],probability = T)
-  # plot(distXgivenY[[2]]$Px,add=T)
-  # Calculamos la información mutua
-  
   # Bucle que pasa por cada particion
   result = 0
   i = 1
@@ -433,15 +372,6 @@ mut_information_cont = function(data,varNames=NULL){
 
 ## Continua y discreta dada una discreta------------------------------
 
-# fit.args =  Argumentos para la calcular las distribuciones MoTBFs
-            # Vease argumentos de ConditionalMethod. Si es null, emplea los
-            # argumentos por defecto de esa funcion con ademas numIntervals=4,
-            # POTENTIAL_TYPE = "MOP",scale = F
-# Se puede introduccir la distribucion de C obtenida empleando la
-# la funcion probDiscreteVariable()
-# se puede introduccir tambien las distribuciones de Y|C, de X|C y de X| Y,C,
-# con X la variable continua e Y la variable discreta. Todas aprendidas con 
-# conditionalMethod
 cond_mut_information_cont_dis = function(data,className,corLap=1,
                                          varNames=NULL, fit.args =NULL,
                                          distC = NULL,distY_C=NULL,
@@ -489,12 +419,6 @@ cond_mut_information_cont_dis = function(data,className,corLap=1,
   distributions = list()
   # Cuenta el numero nuevo de distribuciones aprendidas
   nDist = length(distributions)
-  # browser()
-  # # Calculamos las distribuciones
-  # X = data2[,numLevels==0]# Continua
-  # Y = data2[,numLevels!=0]# Discreta
-  # data = data.frame(X,Y,C)
-  
   
   # Distribucion de X|C,Y
   # distX_YC = conditionalMethod(data,c("C","Y"),"X",4,"MOP",scale=F)
@@ -555,8 +479,7 @@ cond_mut_information_cont_dis = function(data,className,corLap=1,
   
   # Distribucion de Y|C--------------------------
   if(is.null(distY_C)){
-    # Distribucion de Y dada C
-    # distY_C = conditionalMethod(data,"C","Y",4,"MOP",scale = scale)
+    # Distribucion de Y dada C¡
     distY_C = do.call(conditionalMethod,
                       append(fit.args,
                              list(data=data,nameParents=className,
@@ -594,29 +517,7 @@ cond_mut_information_cont_dis = function(data,className,corLap=1,
   
   return(list(MI=MI,distributions=distributions))
 }
-# 
-# ### Examples-------
-# data(ecoli,package = "MoTBFs")
-# className = "lip"
-# varNames = c("alm2","chg",className)
-# scale = F
-# data = MoTBFs:::check_data(ecoli[,-c(1,9)])
-# corLap = 1
-# fit.args = c()
-# cond_mut_information_cont_dis(data,className,scale,varNames)
 
-
-
-## Continuas dada una discreta------------------------------
-# fit.args =  Argumentos para la calcular las distribuciones MoTBFs
-# Vease argumentos de ConditionalMethod. Si es null, emplea los
-# argumentos por defecto de esa funcion con ademas numIntervals=4,
-# POTENTIAL_TYPE = "MOP",scale = F
-# Se puede introduccir la distribucion de C obtenida empleando la
-# la funcion probDiscreteVariable()
-# se puede introducir tambien las distribuciones de Y|C, de X|C y de X| Y,C,
-# con X e Y las variables continuas. Todas aprendidas con 
-# conditionalMethod
 cond_mut_information_cont = function(data,className,corLap=1,
                                      varNames=NULL, fit.args =NULL,
                                      distC = NULL,distY_C=NULL,
@@ -769,36 +670,6 @@ cond_mut_information_cont = function(data,className,corLap=1,
   return(list(MI=MI,distributions=distributions))
 }
 
-
-# ### Examples-------
-# library(MoTBFs)
-# data(ecoli,package = "MoTBFs")
-# className = "lip"
-# varNames = c("gvh","alm2",className)
-# scale = F
-# data = MoTBFs:::check_data(ecoli[,-c(1,9)])
-# cond_mut_information_cont(data,className,scale,varNames)
-# jointmotbf.fit(data[,varNames[1:2]])
-# Pjoint = jointmotbf.fit(data[,varNames[1:2]])
-# plot(Pjoint)
-
-
-## Discretas dada una discreta------------------------------
-
-###-----------------------------##
-# Importante Condiciona la segunda variable del data.frame
-###--------------------------###
-
-# fit.args =  Argumentos para la calcular las distribuciones MoTBFs
-# Vease argumentos de ConditionalMethod. Si es null, emplea los
-# argumentos por defecto de esa funcion con ademas numIntervals=4,
-# POTENTIAL_TYPE = "MOP",scale = F
-# Se puede introduccir la distribucion de C obtenida empleando la
-# la funcion probDiscreteVariable()
-# se puede introducir tambien las distribuciones de Y|C, de X|C y de X| Y,C,
-# con X e Y las variables discretas. Todas aprendidas con 
-# conditionalMethod
-
 cond_mut_information_dis = function(data,className,corLap=1,
                                     varNames=NULL, fit.args =NULL,
                                     distC = NULL,distY_C=NULL,
@@ -874,9 +745,6 @@ cond_mut_information_dis = function(data,className,corLap=1,
   
   # Distribucion de X|C-----------------------------
   if(is.null(distX_C)){
-    # distX_C = conditionalMethod(data = data, nameParents = c("C"),
-    #                                 nameChild = "X",numIntervals = 4,
-    #                                 POTENTIAL_TYPE = "MOP",scale = scale)
     distX_C = do.call(conditionalMethod,
                       append(fit.args,
                              list(data=data,nameParents=className,
@@ -1131,114 +999,3 @@ cond_mut_information_dis_cont = function(data,className,corLap=1,
   
   return(list(MI=MI,distributions=distributions))
 }
-
-### Example------------------
-# library(MoTBFs)
-# set.seed(1)
-# X = rnorm(100)
-# set.seed(21)
-# Y = as.factor(sample(c("y1","y2","y3"),100,replace = T,prob=c(0.45,0.25,0.3)))
-# 
-# set.seed(48)
-# C = as.factor(sample(c("C1","C2"),100,replace = T,prob=c(0.35,0.65)))
-# 
-# data = data.frame(X,Y,C)
-# className = "C"
-# varNames = c("X","Y",className)
-# scale=F
-# cond_mut_information_dis_cont(data,className,scale,varNames)
-
-# Funcion para calcular la informacion mutua de una variable con el resto de un data.frame---------------------
-mutual_info_df_Y = function(data,varCond,fit.args,distr=NULL){
-  MI = c()
-  varNames = setdiff(colnames(data),varCond)
-  if(is.numeric(data[,varCond])){
-    stop("No esta implementado MI con variable continuas como objetivo")
-  }
-  # var_i = varNames[3]
-  for(var_i in varNames){
-    if(is.numeric(data[,var_i])){
-      MI_i = mut_information_cont_dis(data = data[,c(var_i,varCond)],
-                                      fit.args = fit.args,distC = distr[[varCond]],
-                                      distX_C = distr[[paste0(var_i,"|",varCond)]],
-                                      distX = distributions[[var_i]])
-      MI = c(MI,MI_i)
-    }else{
-      MI_i = mut_information_dis(data = data[,c(var_i,varCond)],
-                                 distC = distr[[varCond]],
-                                 distX_C = distr[[paste0(var_i,"|",varCond)]],
-                                 distX = distributions[[var_i]])
-      MI = c(MI,MI_i)
-    }
-  }
-  names(MI)=varNames
-  return(MI)
-}
-
-cond_mutual_info= function(X,Y,C,data,distC,distX_C,distY_C,fit.args){
-  # browser()
-  if(X==Y){
-    return(list(MI=0,name = Y))
-  }else{
-    if(is.null(distC)){
-      
-    }
-    if(is.null(distX_C)){
-      
-    }
-    
-    if(is.null(distX_C)){
-      
-    }
-    if(distX_C$varType=="Continuous"){
-      if(distY_C$varType=="Continuous"){
-        result = cond_mut_information_cont(data = data,className = target,
-                                           varNames = c(X,Y,target),
-                                           fit.args = fit.args,
-                                           distC = distC,distY_C = distY_C,
-                                           distX_C = distX_C)
-      }else{# Quien condiciona es discreto
-        result = cond_mut_information_cont_dis(data = data,className = target,
-                                               varNames = c(X,Y,target),
-                                               fit.args = fit.args,
-                                               distC = distC,distY_C = distY_C,
-                                               distX_C = distX_C)
-      }
-    }else{
-      # La distribucion de X es discreta
-      if(distY_C$varType=="Continuous"){
-        result = cond_mut_information_dis_cont(data = data,className = target,
-                                               varNames = c(X,Y,target),
-                                               fit.args = fit.args,
-                                               distC = distC,distY_C = distX_C,
-                                               distX_C = distY_C)
-      }else{# Quien condiciona es discreto
-        result = cond_mut_information_dis(data = data,className = target,
-                                          varNames = c(X,Y,target),
-                                          fit.args = fit.args,
-                                          distC = distC,distY_C = distY_C,
-                                          distX_C = distX_C)
-      }
-    }
-  }
-  return(MI = result$MI)
-}
-# set.seed(14)
-# C = as.factor(sample(c("c1","c2"),100,T,c(0.4,0.6)))
-# tbC = as.vector(table(C))
-# set.seed(1452)
-# X = c()
-# X[C =="c1"] = rbeta(tbC[1],2,3)
-# set.seed(548)
-# X[C =="c2"] = 2+rbeta(tbC[2],2,3)
-# set.seed(841)
-# Y = as.factor(sample(c("y1","y2"),100,T))
-# set.seed(74)
-# Z = rnorm(100)
-# data = data.frame(X,Y,Z,C)
-# 
-# 
-# varCond="C"
-# fit.args =NULL
-# distr=NULL
-# mutual_info_df_Y(data = data,varCond = varCond,fit.args = fit.args)
