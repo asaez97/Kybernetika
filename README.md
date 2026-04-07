@@ -148,7 +148,7 @@ graphviz.plot(tan)
 
     ## Loading required namespace: Rgraphviz
 
-![](Readme_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](vignettes/unnamed-chunk-4-1.png)<!-- -->
 
 ### Choosing the root of TAN
 
@@ -181,7 +181,7 @@ tan2 = fit_tan_g(target = "C",data = data,root = "Y1",mutualInfoCond = MI)
 graphviz.plot(tan2)
 ```
 
-![](Readme_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](vignettes/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
 # TAN model with illegal root
@@ -189,7 +189,7 @@ tan3 = fit_tan_g(target = "C",data = data,root = "Z1")
 graphviz.plot(tan3)
 ```
 
-![](Readme_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
+![](vignettes/unnamed-chunk-6-2.png)<!-- -->
 
 Finally, when there are only continuous feature variables.
 
@@ -199,4 +199,4 @@ tan4 = fit_tan_g(target = "C",data = data[,c("C","Z1","Z2")],root = "Z1")
 graphviz.plot(tan4)
 ```
 
-![](Readme_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](vignettes/unnamed-chunk-7-1.png)<!-- -->
