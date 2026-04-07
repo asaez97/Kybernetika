@@ -6,19 +6,20 @@ This bundle contains the manuscript submitted to the Kybernetika and
 entitled “*Structural learning of tree aumented naive Bayes using
 mixtures of polynomial*”. The organisation is the following:
 
-- fitTANGAUSS.R: R file where the code for learning conditional Gaussian
+- fitTANGauss.R: R file where the code for learning conditional Gaussian
   TAN.
 - example.R: A R file with a toy example for fit a conditional Gaussian
   TAN model.
+- data.Rda: A R data file with the toy dataset.
 
 The *fitTANGauss.R* file contains the `fit_tan_g`function. It computes
-the structural and the parameters of a TAN models given a data.frame
+the structural and the parameters of a TAN model given a data.frame
 considering the conditional Gaussian assumptions. In addition, this file
 has the following auxiliary functions:
 
 - `cond_mi_cont` and `cond_mi_cont_disc`. They compute the mutual
   information of two predicted variables given the class using
-  conditional Gaussian assuptions.
+  conditional Gaussian assumptions.
 - `MI_tan_gauss`. It computes the mutual information between each pair
   of feature variables given the class variable.
 - `fit_root`. It computes a possible root for TAN model.
@@ -41,9 +42,9 @@ packages:
 ## Data
 
 The toy problem consists in a synthetic dataset with a class variable
-*C*, two continuous features random variables and two discrete features
-random variables following the conditional Gaussian assumptions. The
-dataset contains 100 instances.
+*C*, two continuous features random variables, *Z1* and *Z2*, and two
+discrete features random variables, *Y1* and *Y2*, following the
+conditional Gaussian assumptions. The dataset contains 100 instances.
 
 The following code load the toy problem dataset to the environment.
 
@@ -53,7 +54,7 @@ load("data.Rda")
 
 ## Computing conditional Gaussian TAN
 
-First, we source the *fitTANGauss.R* file for load the neccessary
+First, we source the *fitTANGauss.R* file to load the necessary
 functions to compute the conditional Gaussian TAN model.
 
 ``` r
@@ -147,15 +148,15 @@ graphviz.plot(tan)
 
     ## Loading required namespace: Rgraphviz
 
-![](vignettes/unnamed-chunk-4-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 ### Choosing the root of TAN
 
-The function `fit_tan_g` allows introduces the MI matrix and the root.
-By default, the root is chosen as one of the feature variable with the
-link with highest value in the MI matrix. If there are discrete and
-continuous variables, the root is chosen considering only discrete
-variables.
+The function `fit_tan_g` allows to introduce the MI matrix and the root
+of TAN as arguments. By default, the root is chosen as one of the
+feature variable with the link with highest value in the MI matrix. If
+there are discrete and continuous variables, the root is chosen
+considering only discrete variables.
 
 We can compute the conditional mutual information before TAN using
 conditional Gaussian assumptions using `MI_tan_gauss`.
@@ -180,7 +181,7 @@ tan2 = fit_tan_g(target = "C",data = data,root = "Y1",mutualInfoCond = MI)
 graphviz.plot(tan2)
 ```
 
-![](vignettes/unnamed-chunk-6-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
 # TAN model with illegal root
@@ -188,7 +189,7 @@ tan3 = fit_tan_g(target = "C",data = data,root = "Z1")
 graphviz.plot(tan3)
 ```
 
-![](vignettes/unnamed-chunk-6-2.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
 
 Finally, when there are only continuous feature variables.
 
@@ -198,4 +199,4 @@ tan4 = fit_tan_g(target = "C",data = data[,c("C","Z1","Z2")],root = "Z1")
 graphviz.plot(tan4)
 ```
 
-![](vignettes/unnamed-chunk-7-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
