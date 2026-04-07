@@ -147,7 +147,7 @@ graphviz.plot(tan)
 
     ## Loading required namespace: Rgraphviz
 
-![](Readme_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 ### Choosing the root of TAN
 
